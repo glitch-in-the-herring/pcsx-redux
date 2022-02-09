@@ -19,9 +19,10 @@
 
 #include "core/sio.h"
 
-#include <algorithm> 
-#include <stdexcept>
 #include <sys/stat.h>
+
+#include <algorithm>
+#include <stdexcept>
 
 #include "core/misc.h"
 #include "core/pad.h"
@@ -394,7 +395,7 @@ void PCSX::SIO::LoadMcd(int mcd, const PCSX::u8string str) {
         m_wasMcd2Inserted = false;
     }
 
-    FILE* f = fopen(fname, "rb");
+    FILE *f = fopen(fname, "rb");
     if (f == nullptr) {
         PCSX::g_system->printf(_("The memory card %s doesn't exist - creating it\n"), fname);
         CreateMcd(str);
@@ -404,8 +405,7 @@ void PCSX::SIO::LoadMcd(int mcd, const PCSX::u8string str) {
 
             if (stat(fname, &buf) != -1) {
                 // Check if the file is a VGS memory card, skip the header if it is
-                if (buf.st_size == MCD_SIZE + 64)
-                    fseek(f, 64, SEEK_SET);
+                if (buf.st_size == MCD_SIZE + 64) fseek(f, 64, SEEK_SET);
                 // Check if the file is a Dexdrive memory card, skip the header if it is
                 else if (buf.st_size == MCD_SIZE + 3904)
                     fseek(f, 3904, SEEK_SET);
@@ -439,7 +439,7 @@ void PCSX::SIO::LoadMcds(const PCSX::u8string mcd1, const PCSX::u8string mcd2) {
 
 void PCSX::SIO::SaveMcd(const PCSX::u8string mcd, const char *data, uint32_t adr, size_t size) {
     const char *fname = reinterpret_cast<const char *>(mcd.c_str());
-    FILE* f = fopen(fname, "r+b");
+    FILE *f = fopen(fname, "r+b");
 
     if (f != nullptr) {
         struct stat buf;
@@ -803,12 +803,11 @@ void PCSX::SIO::GetMcdBlockInfo(int mcd, int block, McdBlock *Info) {
         }
     }
 
-    
     // Parse directory frame info
     const auto directoryFrame = (uint8_t *)data + block * MCD_SECT_SIZE;
     Info->Flags = directoryFrame[0];
-    std::strncpy(Info->ID, (const char*) &directoryFrame[0xa], 12);
-    std::strncpy(Info->Name, (const char*) &directoryFrame[0x16], 16);
+    std::strncpy(Info->ID, (const char *)&directoryFrame[0xa], 12);
+    std::strncpy(Info->Name, (const char *)&directoryFrame[0x16], 16);
 
     const uint32_t fileSize =
         directoryFrame[0x4] | (directoryFrame[0x5] << 8) | (directoryFrame[0x6] << 16) | (directoryFrame[0x7] << 24);
@@ -846,11 +845,11 @@ void PCSX::SIO::FormatMcdBlock(int mcd, int block) {
 
     // Fix up the corresponding directory frame in block 0.
     const auto frame = (uint8_t *)data + block * MCD_SECT_SIZE;
-    frame[0] = 0xa0;  // Code for a freshly formatted block
-    for (auto i = 1; i < 0x7f; i++) { // Zero the rest of the frame
+    frame[0] = 0xa0;                   // Code for a freshly formatted block
+    for (auto i = 1; i < 0x7f; i++) {  // Zero the rest of the frame
         frame[i] = 0;
     }
-    frame[0x7f] = 0xa0; // xor checksum of frame
+    frame[0x7f] = 0xa0;  // xor checksum of frame
 }
 // Back up the entire memory card to a file
 // mcd: The memory card to back up (1 or 2)
